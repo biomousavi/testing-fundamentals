@@ -18,7 +18,6 @@ export class GithubApi {
     if (this.token) {
       headers["Authorization"] = "Bearer " + this.token;
     }
-
     const response = await fetch(
       `https://api.github.com/repos/${user}/${repo}`,
       {
