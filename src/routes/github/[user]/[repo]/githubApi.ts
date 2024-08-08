@@ -8,7 +8,8 @@ export type Fetch = typeof fetch;
 export class GithubApi {
   constructor(
     private token: string | undefined,
-    private apiFetch: Fetch
+    private apiFetch: Fetch,
+    private timeout: number = 4000
   ) {
     this.token = token;
   }
@@ -21,13 +22,14 @@ export class GithubApi {
     if (this.token) {
       headers["Authorization"] = "Bearer " + this.token;
     }
-    const response = await this.apiFetch(
-      `https://api.github.com/repos/${user}/${repo}`,
-      {
+
+    return Promise.race([
+      delay(this.timeout).then(() => ({ response: "timeout" })),
+      this.apiFetch(`https://api.github.com/repos/${user}/${repo}`, {
         headers,
-      }
-    );
-    const repository = (await response.json()) as OrgRepoResponse;
-    return repository;
+      }).then((res) => res.json()),
+    ]);
   }
 }
+
+const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
