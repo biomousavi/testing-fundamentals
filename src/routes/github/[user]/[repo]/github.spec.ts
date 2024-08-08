@@ -27,10 +27,43 @@ describe("githubApi", () => {
         }
       );
 
+      // Resolving Promise
       fetchMock.mock.results[0].value.resolve(new Response('"RESPONSE"'));
+
+      // asserting Promise
       expect(await response).equal(fetchRes);
     });
-    it.todo("should timeout after x seconds with timeout response");
+
+    it("should timeout after x seconds with timeout response", async ({
+      expect,
+    }) => {
+      const repo = "REPO";
+      const token = "TOKEN";
+      const username = "USERNAME";
+      const timeoutMs = 30;
+
+      // this is our function that pretending to be a real fetch function
+      const fetchMock = vi.fn<Parameters<Fetch>, ReturnType<Fetch>>(
+        mockPromise
+      );
+      const api = new GithubApi(token, fetchMock, timeoutMs);
+      const response = api.getRepository(username, repo);
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        `https://api.github.com/repos/${username}/${repo}`,
+        {
+          headers: {
+            "User-Agent": "Qwik Workshop",
+            "X-GitHub-Api-Version": "2022-11-28",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      expect(await response).toEqual({
+        response: "timeout",
+      });
+    });
   });
 });
 
