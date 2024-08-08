@@ -8,7 +8,7 @@ export const useRepository = routeLoader$(async ({ params, env }) => {
 
   const token = env.get("PRIVATE_GITHUB_ACCESS_TOKEN");
 
-  const api = new GithubApi(token);
+  const api = new GithubApi(token, fetch);
   return await api.getRepository(user, repo);
 });
 
