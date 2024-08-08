@@ -1,20 +1,26 @@
-import { describe, it, vi } from "vitest";
+import { beforeEach, describe, it, Mock, vi } from "vitest";
 import { Fetch, GithubApi } from "./githubApi";
 
 describe("githubApi", () => {
+  let fetchMock: Mock<Parameters<Fetch>, ReturnType<Fetch>>;
+  let api: GithubApi;
+
+  const repo = "REPO";
+  const token = "TOKEN";
+  const username = "USERNAME";
+
+  beforeEach(() => {
+    // this is our function that pretending to be a real fetch function
+    fetchMock = vi.fn<Parameters<Fetch>, ReturnType<Fetch>>(mockPromise);
+
+    // initialize github API calss
+    api = new GithubApi(token, fetchMock);
+  });
+
   describe("getRepository", () => {
     it("should return repository information", async ({ expect }) => {
-      const repo = "REPO";
-      const token = "TOKEN";
-      const fetchRes = "RESPONSE";
-      const username = "USERNAME";
-
-      // this is our function that pretending to be a real fetch function
-      const fetchMock = vi.fn<Parameters<Fetch>, ReturnType<Fetch>>(
-        mockPromise
-      );
-      const api = new GithubApi(token, fetchMock);
-      const response = api.getRepository(username, repo);
+      // calling fetch API
+      const apiResponse = api.getRepository(username, repo);
 
       expect(fetchMock).toHaveBeenCalledWith(
         `https://api.github.com/repos/${username}/${repo}`,
@@ -27,25 +33,19 @@ describe("githubApi", () => {
         }
       );
 
+      const fetchRes = "RESPONSE";
+
       // Resolving Promise
       fetchMock.mock.results[0].value.resolve(new Response('"RESPONSE"'));
 
       // asserting Promise
-      expect(await response).equal(fetchRes);
+      expect(await apiResponse).equal(fetchRes);
     });
 
     it("should timeout after x seconds with timeout response", async ({
       expect,
     }) => {
-      const repo = "REPO";
-      const token = "TOKEN";
-      const username = "USERNAME";
       const timeoutMs = 30;
-
-      // this is our function that pretending to be a real fetch function
-      const fetchMock = vi.fn<Parameters<Fetch>, ReturnType<Fetch>>(
-        mockPromise
-      );
       const api = new GithubApi(token, fetchMock, timeoutMs);
       const response = api.getRepository(username, repo);
 
