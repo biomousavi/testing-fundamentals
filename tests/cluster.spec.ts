@@ -21,6 +21,18 @@ test("it prints current parameters", async ({ page }) => {
   await expect(cluster.distance).toHaveText(distance.toString());
 });
 
+test("it should return validation error when out of bound parameters passed", async ({
+  page,
+}) => {
+  const cluster = new ClusterPage(page);
+  await cluster.goto();
+
+  ClusterPage.setDistance(1);
+  ClusterPage.submit();
+
+  expect(ClusterPage.distanceError).toHaveText("Distance must be at least 100");
+});
+
 class ClusterPage {
   constructor(private page: Page) {}
 
