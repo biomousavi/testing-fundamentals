@@ -27,14 +27,28 @@ test("it should return validation error when out of bound parameters passed", as
   const cluster = new ClusterPage(page);
   await cluster.goto();
 
-  ClusterPage.setDistance(1);
-  ClusterPage.submit();
+  await cluster.setDistance(1);
+  await cluster.submit();
 
-  expect(ClusterPage.distanceError).toHaveText("Distance must be at least 100");
+  await expect(cluster.distanceError).toHaveText(
+    "Distance must be at least 100"
+  );
 });
 
 class ClusterPage {
   constructor(private page: Page) {}
+
+  get distanceError() {
+    return this.page.locator(".error.distance");
+  }
+
+  async submit() {
+    await this.page.click("button[type=submit]");
+  }
+
+  async setDistance(distance: number) {
+    await this.page.fill("input[name=distance]", distance.toString());
+  }
 
   async goto(size = 1000, distance = 450) {
     const url = new URL("http://localhost:5173/clustering/");
